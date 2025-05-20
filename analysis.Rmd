@@ -35,5 +35,143 @@ df <- df %>% rename(
 )
 ```
 ```{r}
+cols_to_fill <- c("online_hours", "self_prod_score", "actual_prod_score", "stress", "sleep_hours", "screen_time_before_sleep", "job_score")  # Replace with your column names
+for (col in cols_to_fill) {
+  df[[col]][is.na(df[[col]])] <- mean(df[[col]], na.rm = TRUE)
+}
+colSums(is.na(df))
+```
+```{r}
+cols_to_round <- c("online_hours", "work_hours", "self_prod_score", "actual_prod_score", "sleep_hours", "weekly_offline_hours", "job_score")
+for (col in cols_to_round) {
+  df[[col]] <- round(df[[col]])
+}
+head(df)
+```
 
+
+```{r}
+df <- df[df$gender != "Other", ]
+ggplot(df, aes(x = `gender`)) +
+  geom_bar(fill = "cyan", color = "black", alpha = 0.5 , stat = "count") +
+  labs(title = "Gender Distribution", x = "Gender", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `job`)) +
+  geom_bar(fill = "green", color = "black", alpha = 0.5) +
+  labs(title = "Job Distribution", x = "Job", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `focus_app`)) +
+  geom_bar(fill = "brown", color = "black", alpha = 0.5) +
+  labs(title = "Focus App Users", x = "Yes or No", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `digital_wellbeing`)) +
+  geom_bar(fill = "red", color = "black", alpha = 0.5) +
+  labs(title = "Digital Wellbeing Enabled", x = "Yes or No", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `app`)) +
+  geom_bar(fill = "purple", color = "black", alpha = 0.5 , stat = "count") +
+  labs(title = "Social Media Platform Distribution", x = "App", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `age`)) +
+  geom_histogram(binwidth = 1, fill = "yellow", color = "black", alpha = 0.5) +
+  labs(title = "Age", x = "Age", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `self_prod_score`)) +
+  geom_histogram(binwidth = 1, fill = "cyan", color = "black", alpha = 0.5) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(title = "Self Productivity Score", x = "Self Productivity Score", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `actual_prod_score`)) +
+  geom_histogram(binwidth = 1, fill = "green", color = "black", alpha = 0.5) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(title = "Actual Prodcutivity Score", x = "Actual Productivity Score", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `sleep_hours`)) +
+  geom_histogram(binwidth = 1, fill = "red", color = "black", alpha = 0.5) +
+  labs(title = "Sleep Hours Distirbution", x = "Sleep Hours", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(y = `work_hours`)) +
+  geom_boxplot(outlier.colour = "red", fill = "red", outlier.shape = 16) +
+  labs(title = "Boxplot of Sleep Hours", y = "Hours")
+```
+```{r}
+ggplot(df, aes(x = `work_hours`)) +
+  geom_histogram(binwidth = 1, fill = "cyan", color = "black", alpha = 0.5) +
+  labs(title = "Work Hours Distirbution", x = "Work Hours", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(y = `work_hours`)) +
+  geom_boxplot(outlier.colour = "red", fill = "cyan", outlier.shape = 16) +
+  labs(title = "Boxplot of Work Hours", y = "Hours")
+```
+```{r}
+ggplot(df, aes(x = `online_hours`)) +
+  geom_histogram(binwidth = 1, fill = "pink", color = "black", alpha = 0.5) +
+  labs(title = "Online Hours Distirbution", x = "Online Hours", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(y = `online_hours`)) +
+  geom_boxplot(outlier.colour = "red", fill = "pink", outlier.shape = 16) +
+  labs(title = "Boxplot of Online Hours", y = "Hours")
+```
+```{r}
+replace_outliers_with_mean <- function(data, columns) {
+  for (col in columns) {
+      Q1 <- quantile(data[[col]], 0.25, na.rm = TRUE)
+      Q3 <- quantile(data[[col]], 0.75, na.rm = TRUE)
+      IQR_val <- Q3 - Q1
+
+      lower_bound <- Q1 - 1.5 * IQR_val
+      upper_bound <- Q3 + 1.5 * IQR_val
+
+      mean_val <- mean(data[[col]], na.rm = TRUE)
+
+      data[[col]] <- ifelse(data[[col]] < lower_bound | data[[col]] > upper_bound,
+                            mean_val,
+                            data[[col]])
+  }
+  return(data)
+}
+df <- replace_outliers_with_mean(df, c("online_hours", "work_hours", "sleep_hours"))
+```
+```{r}
+ggplot(df, aes(y = `online_hours`)) +
+  geom_boxplot(outlier.colour = "red", fill = "pink", outlier.shape = 16) +
+  labs(title = "Boxplot of Online Hours", y = "Hours")
+```
+```{r}
+ggplot(df, aes(y = `work_hours`)) +
+  geom_boxplot(outlier.colour = "red", fill = "cyan", outlier.shape = 16) +
+  labs(title = "Boxplot of Work Hours", y = "Hours")
+```
+```{r}
+ggplot(df, aes(y = `work_hours`)) +
+  geom_boxplot(outlier.colour = "red", fill = "red", outlier.shape = 16) +
+  labs(title = "Boxplot of Sleep Hours", y = "Hours")
+```
+```{r}
+ggplot(df, aes(x = `stress`)) +
+  geom_histogram(binwidth = 1, fill = "green", color = "black", alpha = 0.5) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(title = "Stress Level", x = "Stress Level", y = "Frequency")
+```
+```{r}
+ggplot(df, aes(x = `job_score`)) +
+  geom_histogram(binwidth = 1, fill = "purple", color = "black", alpha = 0.5) +
+  scale_x_continuous(breaks = 1:10) +
+  labs(title = "Job Satisfaction Score", x = "Job Satisfaction Score", y = "Frequency")
+```
+```{r}
+library(ggcorrplot)
+corr_mat = round(cor(df[sapply(df, is.numeric)]),1)
+ggcorrplot(corr_mat, lab = TRUE)
 ```
