@@ -82,6 +82,20 @@ ggplot(df, aes(x = `age`)) +
   labs(title = "Age", x = "Age", y = "Frequency")
 ```
 ```{r}
+df <- df %>%
+  mutate(age_group = cut(
+    age,
+    breaks = c(17, 30, 47, 65),
+    labels = c("Young Adult", "Middle-Aged Adults", "Old Adults"),
+    right = TRUE,
+    include.lowest = TRUE
+  ))
+age_counts <- table(df$age_group)
+pct <- round(100 * age_counts / sum(age_counts), 1)
+labels <- paste(names(age_counts), "\n", pct, "%")
+pie(age_counts, labels = labels, main = "Age Group Distribution")
+```
+```{r}
 ggplot(df, aes(x = `self_prod_score`)) +
   geom_histogram(binwidth = 1, fill = "cyan", color = "black", alpha = 0.5) +
   scale_x_continuous(breaks = 1:10) +
@@ -175,3 +189,6 @@ library(ggcorrplot)
 corr_mat = round(cor(df[sapply(df, is.numeric)]),1)
 ggcorrplot(corr_mat, lab = TRUE)
 ```
+No strong correlation between features in dataset so predictive analysis won't be feasible. 
+so leaning towards hypothesis testing.
+We will be using t-test, anova to test some basic hypothesis.
