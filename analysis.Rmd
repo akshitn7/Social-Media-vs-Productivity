@@ -1,0 +1,39 @@
+---
+title: "SocialMedia vs Productivity"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+library(ggplot2)
+df <- read_csv("social_media_vs_productivity.csv")
+head(df)
+```
+```{r}
+summary(df)
+```
+```{r}
+str(df)
+```
+```{r}
+colSums(is.na(df))
+```
+```{r}
+df <- df %>% rename(
+  "job" = "job_type",
+  "online_hours" = "daily_social_media_time",
+  "app" = "social_platform_preference" ,
+  "notifications" = "number_of_notifications",
+  "work_hours" = "work_hours_per_day",
+  "self_prod_score" = "perceived_productivity_score",
+  "actual_prod_score" = "actual_productivity_score",
+  "stress" = "stress_level",
+  "focus_app" = "uses_focus_apps",
+  "digital_wellbeing" = "has_digital_wellbeing_enabled",
+  "coffee" = "coffee_consumption_per_day",
+  "burnout_days" = "days_feeling_burnout_per_month",
+  "job_score" = "job_satisfaction_score"
+)
+```
+```{r}
+
+```
