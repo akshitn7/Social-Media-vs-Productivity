@@ -42,7 +42,7 @@ for (col in cols_to_fill) {
 colSums(is.na(df))
 ```
 ```{r}
-cols_to_round <- c("online_hours", "work_hours", "self_prod_score", "actual_prod_score", "sleep_hours", "weekly_offline_hours", "job_score")
+cols_to_round <- c("self_prod_score", "actual_prod_score", "job_score")
 for (col in cols_to_round) {
   df[[col]] <- round(df[[col]])
 }
@@ -78,7 +78,7 @@ ggplot(df, aes(x = `app`)) +
 ```
 ```{r}
 ggplot(df, aes(x = `age`)) +
-  geom_histogram(binwidth = 1, fill = "yellow", color = "black", alpha = 0.5) +
+  geom_density(fill = "yellow", color = "black", alpha = 0.5) +
   labs(title = "Age", x = "Age", y = "Frequency")
 ```
 ```{r}
@@ -109,7 +109,7 @@ ggplot(df, aes(x = `actual_prod_score`)) +
 ```
 ```{r}
 ggplot(df, aes(x = `sleep_hours`)) +
-  geom_histogram(binwidth = 1, fill = "red", color = "black", alpha = 0.5) +
+  geom_density(fill = "red", color = "black", alpha = 0.5) +
   labs(title = "Sleep Hours Distirbution", x = "Sleep Hours", y = "Frequency")
 ```
 ```{r}
@@ -119,7 +119,7 @@ ggplot(df, aes(y = `work_hours`)) +
 ```
 ```{r}
 ggplot(df, aes(x = `work_hours`)) +
-  geom_histogram(binwidth = 1, fill = "cyan", color = "black", alpha = 0.5) +
+  geom_density(fill = "cyan", color = "black", alpha = 0.5) +
   labs(title = "Work Hours Distirbution", x = "Work Hours", y = "Frequency")
 ```
 ```{r}
@@ -129,7 +129,7 @@ ggplot(df, aes(y = `work_hours`)) +
 ```
 ```{r}
 ggplot(df, aes(x = `online_hours`)) +
-  geom_histogram(binwidth = 1, fill = "pink", color = "black", alpha = 0.5) +
+  geom_density(fill = "pink", color = "black", alpha = 0.5) +
   labs(title = "Online Hours Distirbution", x = "Online Hours", y = "Frequency")
 ```
 ```{r}
@@ -180,8 +180,7 @@ ggplot(df, aes(x = `stress`)) +
 ```
 ```{r}
 ggplot(df, aes(x = `job_score`)) +
-  geom_histogram(binwidth = 1, fill = "purple", color = "black", alpha = 0.5) +
-  scale_x_continuous(breaks = 1:10) +
+  geom_histogram(binwidth = 1,fill = "purple", color = "black", alpha = 0.5) +
   labs(title = "Job Satisfaction Score", x = "Job Satisfaction Score", y = "Frequency")
 ```
 ```{r}
@@ -192,3 +191,44 @@ ggcorrplot(corr_mat, lab = TRUE)
 No strong correlation between features in dataset so predictive analysis won't be feasible. 
 so leaning towards hypothesis testing.
 We will be using t-test, anova to test some basic hypothesis.
+
+H0: Average productivity score is equal to 6
+Ha: Average productivity score is not equal to 6
+```{r}
+t_test_productivity <- t.test(df$actual_prod_score, mu = 6)
+print("T-Test Result of Actual Productivity Score")
+print(t_test_productivity)
+```
+H0: Use of focus apps have no effect on productivity
+Ha: Use of focus apps have effect on productivity
+```{r}
+t_test_focus_app <- t.test(actual_prod_score ~ focus_app, data = df)
+print("T-Test Result of Effect of Focus Apps")
+print(t_test_focus_app)
+```
+H0:Screen Time is equal across various Social Media platforms
+Ha:Screen Time is not equal across various Social Media platforms
+```{r}
+anova_model <- aov(online_hours ~ app, data = df)
+summary(anova_model)
+```
+```{r}
+tukey <- TukeyHSD(anova_model)
+par(mar = c(5, 9, 4, 2))
+plot(tukey,las = 1)
+```
+H0 : Screen Time is equal across various Age group
+Ha : Screen Time is not equal across various Age group
+```{r}
+anova_model <- aov(online_hours ~ age_group, data = df)
+summary(anova_model)
+```
+There is no significant affect of age group in screen time.
+
+H0: There is no difference in mean Screen Time between groups that have digital well being enabled
+Ha: There is difference in mean Screen Time between groups that have digital well being enabled
+```{r}
+t_test_digital_wellbeing <- t.test(online_hours ~ digital_wellbeing, data = df)
+print("T Test Result of Digital Wellbeing")
+print(t_test_digital_wellbeing)
+```
