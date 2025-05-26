@@ -18,6 +18,9 @@ str(df)
 colSums(is.na(df))
 ```
 ```{r}
+df <- df[!duplicated(df), ]
+```
+```{r}
 df <- df %>% rename(
   "job" = "job_type",
   "online_hours" = "daily_social_media_time",
@@ -117,6 +120,7 @@ ggplot(df, aes(y = `work_hours`)) +
   geom_boxplot(outlier.colour = "red", fill = "red", outlier.shape = 16) +
   labs(title = "Boxplot of Sleep Hours", y = "Hours")
 ```
+
 ```{r}
 ggplot(df, aes(x = `work_hours`)) +
   geom_density(fill = "cyan", color = "black", alpha = 0.5) +
@@ -209,7 +213,7 @@ print(t_test_focus_app)
 H0:Screen Time is equal across various Social Media platforms
 Ha:Screen Time is not equal across various Social Media platforms
 ```{r}
-anova_model <- aov(online_hours ~ app, data = df)
+anova_model <- aov(online_hours ~ factor(app), data = df)
 summary(anova_model)
 ```
 ```{r}
@@ -220,7 +224,7 @@ plot(tukey,las = 1)
 H0 : Screen Time is equal across various Age group
 Ha : Screen Time is not equal across various Age group
 ```{r}
-anova_model <- aov(online_hours ~ age_group, data = df)
+anova_model <- aov(online_hours ~ factor(age_group), data = df)
 summary(anova_model)
 ```
 There is no significant affect of age group in screen time.
