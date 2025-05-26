@@ -227,8 +227,13 @@ There is no significant affect of age group in screen time.
 
 H0: There is no difference in mean Screen Time between groups that have digital well being enabled
 Ha: There is difference in mean Screen Time between groups that have digital well being enabled
+
+
 ```{r}
 t_test_digital_wellbeing <- t.test(online_hours ~ digital_wellbeing, data = df)
 print("T Test Result of Digital Wellbeing")
 print(t_test_digital_wellbeing)
+```
+```{r}
+write.csv(df, "cleaned_data.csv", row.names = FALSE)
 ```
