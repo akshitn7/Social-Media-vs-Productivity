@@ -7,23 +7,29 @@ library(ggplot2)
 data_all <- read.csv("cleaned_data.csv")
 
 ui <- dashboardPage(
-  dashboardHeader(title = "SocialMedia"),
+  dashboardHeader(title = "ProdByHabits"),
   dashboardSidebar(
     sidebarMenu(
+      menuItem("Plot", tabName = "plot", icon = icon("chart-bar")),
       menuItem("T-Test", tabName = "ttest", icon = icon("flask")),
-      menuItem("ANOVA", tabName = "anova", icon = icon("chart-line")),
-      menuItem("Plot", tabName = "plot", icon = icon("chart-bar"))
+      menuItem("ANOVA", tabName = "anova", icon = icon("chart-line"))
     )
   ),
   dashboardBody(
     tabItems(
+      # ---- PLOT TAB ----
+      tabItem(tabName = "plot",
+              h2("Data Visualization"),
+              selectInput("plot_var", "Select Column", choices = names(data_all)),
+              plotOutput("plot_output")
+      ),
+      
       # ---- T-TEST TAB ----
       tabItem(tabName = "ttest",
               h2("T-Test"),
               radioButtons("sample_count", "Number of Samples:",
                            choices = c("One Sample" = "one", "Two Sample" = "two")),
               uiOutput("ttest_var_ui"),
-              numericInput("mu", "Hypothesized Mean", value = 0),
               actionButton("run_ttest", "Run T-Test"),
               verbatimTextOutput("ttest_result")
       ),
@@ -34,14 +40,8 @@ ui <- dashboardPage(
               uiOutput("anova_ui"),
               actionButton("run_anova", "Run ANOVA"),
               verbatimTextOutput("anova_result")
-      ),
-      
-      # ---- PLOT TAB ----
-      tabItem(tabName = "plot",
-              h2("Data Visualization"),
-              selectInput("plot_var", "Select Column", choices = names(data_all)),
-              plotOutput("plot_output")
       )
+      
     )
   )
 )
@@ -51,12 +51,17 @@ server <- function(input, output, session) {
   # ---- T-TEST ----
   output$ttest_var_ui <- renderUI({
     numeric_vars <- names(data_all)[sapply(data_all, is.numeric)]
+    
     if (input$sample_count == "one") {
-      selectInput("var1", "Select Variable", numeric_vars)
+      tagList(
+        selectInput("var1", "Select Variable", numeric_vars),
+        numericInput("mu", "Hypothesized Mean", value = 0)
+      )
     } else {
       tagList(
-        selectInput("var1", "Select Variable 1", numeric_vars),
-        selectInput("var2", "Select Variable 2", numeric_vars)
+        selectInput("group_var", "Select Variable to Split into samples", numeric_vars),
+        numericInput("cutoff", "Split Cutoff Value", value = 0),
+        selectInput("target_var", "Select Target Variable for T-Test", numeric_vars)
       )
     }
   })
@@ -66,15 +71,30 @@ server <- function(input, output, session) {
     result <- NULL
     
     if (input$sample_count == "one") {
-      req(input$var1)
+      req(input$var1, input$mu)
       result <- t.test(df[[input$var1]], mu = input$mu)
+      
     } else if (input$sample_count == "two") {
-      req(input$var1, input$var2)
-      result <- t.test(df[[input$var1]], df[[input$var2]])
+      req(input$group_var, input$cutoff, input$target_var)
+      
+      # Split into two groups
+      group_low <- df[[input$group_var]] < input$cutoff
+      group_high <- df[[input$group_var]] >= input$cutoff
+      
+      data_low <- df[group_low, input$target_var, drop = TRUE]
+      data_high <- df[group_high, input$target_var, drop = TRUE]
+      
+      # Ensure both groups have data
+      if (length(data_low) < 2 || length(data_high) < 2) {
+        result <- "Not enough data in one or both groups to perform t-test."
+      } else {
+        result <- t.test(data_low, data_high)
+      }
     }
     
     output$ttest_result <- renderPrint({ result })
   })
+  
   
   # ---- ANOVA ----
   output$anova_ui <- renderUI({
@@ -97,7 +117,7 @@ server <- function(input, output, session) {
     
     if (is.numeric(var_data)) {
       ggplot(data_all, aes(x = .data[[input$plot_var]])) +
-        geom_histogram(fill = "purple", color = "black", bins = 30) +
+        geom_histogram(binwidth = 1,fill = "purple", color = "black", alpha = 0.5) +
         labs(title = paste("Histogram of", input$plot_var), x = input$plot_var)
     } else {
       ggplot(data_all, aes(x = .data[[input$plot_var]])) +
